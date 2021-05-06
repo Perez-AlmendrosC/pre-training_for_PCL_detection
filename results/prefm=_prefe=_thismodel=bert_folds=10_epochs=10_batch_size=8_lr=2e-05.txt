@@ -1,0 +1,180 @@
+Classification report:
+								downsample_pcl_finetuned with  on  epochs 
+								folds = 10
+								epochs = 10
+								batch size = 8 
+								lr = 2e-05
+								-------------------------------------------------------------------------------
+								fold_numb = 1
+								-------------------------------------------------------------------------------
+
+								              precision    recall  f1-score   support
+
+           0     0.8763    0.8973    0.8866       292
+           1     0.7030    0.6574    0.6794       108
+
+   micro avg     0.8325    0.8325    0.8325       400
+   macro avg     0.7896    0.7773    0.7830       400
+weighted avg     0.8295    0.8325    0.8307       400
+Classification report:
+								downsample_pcl_finetuned with  on  epochs 
+								folds = 10
+								epochs = 10
+								batch size = 8 
+								lr = 2e-05
+								-------------------------------------------------------------------------------
+								fold_numb = 1
+								-------------------------------------------------------------------------------
+
+								              precision    recall  f1-score   support
+
+           0     0.8842    0.9076    0.8958       303
+           1     0.6854    0.6289    0.6559        97
+
+   micro avg     0.8400    0.8400    0.8400       400
+   macro avg     0.7848    0.7682    0.7758       400
+weighted avg     0.8360    0.8400    0.8376       400
+Classification report:
+								downsample_pcl_finetuned with  on  epochs 
+								folds = 10
+								epochs = 10
+								batch size = 8 
+								lr = 2e-05
+								-------------------------------------------------------------------------------
+								fold_numb = 1
+								-------------------------------------------------------------------------------
+
+								              precision    recall  f1-score   support
+
+           0     0.8766    0.9264    0.9008       299
+           1     0.7381    0.6139    0.6703       101
+
+   micro avg     0.8475    0.8475    0.8475       400
+   macro avg     0.8073    0.7701    0.7855       400
+weighted avg     0.8416    0.8475    0.8426       400
+Classification report:
+								downsample_pcl_finetuned with  on  epochs 
+								folds = 10
+								epochs = 10
+								batch size = 8 
+								lr = 2e-05
+								-------------------------------------------------------------------------------
+								fold_numb = 1
+								-------------------------------------------------------------------------------
+
+								              precision    recall  f1-score   support
+
+           0     0.9031    0.8729    0.8878       299
+           1     0.6577    0.7228    0.6887       101
+
+   micro avg     0.8350    0.8350    0.8350       400
+   macro avg     0.7804    0.7978    0.7882       400
+weighted avg     0.8411    0.8350    0.8375       400
+Classification report:
+								downsample_pcl_finetuned with  on  epochs 
+								folds = 10
+								epochs = 10
+								batch size = 8 
+								lr = 2e-05
+								-------------------------------------------------------------------------------
+								fold_numb = 1
+								-------------------------------------------------------------------------------
+
+								              precision    recall  f1-score   support
+
+           0     0.8778    0.9223    0.8995       296
+           1     0.7416    0.6346    0.6839       104
+
+   micro avg     0.8475    0.8475    0.8475       400
+   macro avg     0.8097    0.7785    0.7917       400
+weighted avg     0.8424    0.8475    0.8435       400
+Classification report:
+								downsample_pcl_finetuned with  on  epochs 
+								folds = 10
+								epochs = 10
+								batch size = 8 
+								lr = 2e-05
+								-------------------------------------------------------------------------------
+								fold_numb = 1
+								-------------------------------------------------------------------------------
+
+								              precision    recall  f1-score   support
+
+           0     0.9183    0.8864    0.9021       317
+           1     0.6129    0.6951    0.6514        82
+
+   micro avg     0.8471    0.8471    0.8471       399
+   macro avg     0.7656    0.7908    0.7768       399
+weighted avg     0.8555    0.8471    0.8506       399
+Classification report:
+								downsample_pcl_finetuned with  on  epochs 
+								folds = 10
+								epochs = 10
+								batch size = 8 
+								lr = 2e-05
+								-------------------------------------------------------------------------------
+								fold_numb = 1
+								-------------------------------------------------------------------------------
+
+								              precision    recall  f1-score   support
+
+           0     0.8734    0.8997    0.8863       299
+           1     0.6703    0.6100    0.6387       100
+
+   micro avg     0.8271    0.8271    0.8271       399
+   macro avg     0.7719    0.7548    0.7625       399
+weighted avg     0.8225    0.8271    0.8243       399
+Classification report:
+								downsample_pcl_finetuned with  on  epochs 
+								folds = 10
+								epochs = 10
+								batch size = 8 
+								lr = 2e-05
+								-------------------------------------------------------------------------------
+								fold_numb = 1
+								-------------------------------------------------------------------------------
+
+								              precision    recall  f1-score   support
+
+           0     0.9338    0.9216    0.9276       306
+           1     0.7526    0.7849    0.7684        93
+
+   micro avg     0.8897    0.8897    0.8897       399
+   macro avg     0.8432    0.8533    0.8480       399
+weighted avg     0.8915    0.8897    0.8905       399
+Classification report:
+								downsample_pcl_finetuned with  on  epochs 
+								folds = 10
+								epochs = 10
+								batch size = 8 
+								lr = 2e-05
+								-------------------------------------------------------------------------------
+								fold_numb = 1
+								-------------------------------------------------------------------------------
+
+								              precision    recall  f1-score   support
+
+           0     0.8667    0.9220    0.8935       282
+           1     0.7778    0.6581    0.7130       117
+
+   micro avg     0.8446    0.8446    0.8446       399
+   macro avg     0.8222    0.7901    0.8032       399
+weighted avg     0.8406    0.8446    0.8405       399
+Classification report:
+								downsample_pcl_finetuned with  on  epochs 
+								folds = 10
+								epochs = 10
+								batch size = 8 
+								lr = 2e-05
+								-------------------------------------------------------------------------------
+								fold_numb = 1
+								-------------------------------------------------------------------------------
+
+								              precision    recall  f1-score   support
+
+           0     0.8857    0.9088    0.8971       307
+           1     0.6667    0.6087    0.6364        92
+
+   micro avg     0.8396    0.8396    0.8396       399
+   macro avg     0.7762    0.7587    0.7667       399
+weighted avg     0.8352    0.8396    0.8370       399
