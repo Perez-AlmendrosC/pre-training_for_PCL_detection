@@ -64,11 +64,6 @@ if __name__ == '__main__':
 
 		SEED = 1
 
-		LR = [2e-5, 1e-5] # default 2e-5  2e-3, 2e-7 , 1e-5
-		EPOCHS = [2,5,10] # default 2,5,10
-		BATCH_SIZE = [8] # default 8,16
-		FOLDS = [10]
-
 		rows=[]
 
 		with open(corpus_path) as data:
@@ -109,6 +104,11 @@ if __name__ == '__main__':
 		set_seed(SEED)
 
 		prefinetuned_model, prefinetuned_epochs = get_pretrained_name(model_path)
+
+		LR = [2e-5]#, 1e-5] # default 2e-5  2e-3, 2e-7 , 1e-5
+		EPOCHS = [2,5,10] # default 2,5,10
+		BATCH_SIZE = [8] # default 8,16
+		FOLDS = [10]
 		
 		for folds in FOLDS:
 			for epochs in EPOCHS: 
@@ -139,7 +139,7 @@ if __name__ == '__main__':
 																'num_train_epochs': epochs, 
 																'cache_dir':out_model, 
 																'output_dir':out_model, 
-																'n_gpu':2, 
+																'n_gpu':1, 
 																'silent':False, 
 																'train_batch_size':batch_size, 
 																'learning_rate': lr
