@@ -67,7 +67,13 @@ if __name__ == '__main__':
 
 
 	ethics_path = args.dataset_path
-	if 'justice' in args.dataset_path:
+	if 'combined' in args.dataset_path:
+		data=pd.read_csv(ethics_path, sep='\t')
+		train_df=pd.DataFrame(data[['paragraph', 'label']]) 
+		# dummy tests to make the code run
+		test_hard_df = train_df
+		test_df = train_df
+	elif 'justice' in args.dataset_path:
 		# THIS CODE FOR JUSTICE DATASET
 		train_df = load_justice_sentences(ethics_path, split="train")
 		test_hard_df = load_justice_sentences(ethics_path, split="test_hard")

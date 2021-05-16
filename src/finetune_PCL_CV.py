@@ -62,7 +62,7 @@ if __name__ == '__main__':
 		transformers_logger = logging.getLogger("transformers")
 		transformers_logger.setLevel(logging.WARNING)
 
-		SEED = 1
+		SEED = 95
 
 		rows=[]
 
@@ -106,7 +106,7 @@ if __name__ == '__main__':
 		prefinetuned_model, prefinetuned_epochs = get_pretrained_name(model_path)
 
 		LR = [2e-5]#, 1e-5] # default 2e-5  2e-3, 2e-7 , 1e-5
-		EPOCHS = [2,5,10] # default 2,5,10
+		EPOCHS = [10] # default 2,5,10
 		BATCH_SIZE = [8] # default 8,16
 		FOLDS = [10]
 		
