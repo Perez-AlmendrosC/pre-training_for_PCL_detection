@@ -206,35 +206,32 @@ def validate_predictions(finetuned_model, validation_dataloader, fold_counter):
     b_input_mask = batch[1].to(device)
     b_labels = batch[2].to(device)
     all_true_labels.append(b_labels)
-  # Tell pytorch not to bother with constructing the compute graph during
-  # the forward pass, since this is only needed for backprop (training).
-  with torch.no_grad():        
-    evl_mdl = finetuned_model(b_input_ids, 
-                    token_type_ids=None, 
-                    attention_mask=b_input_mask,
-                    labels=b_labels)
-    loss=evl_mdl[0]
-    logits=evl_mdl[1]
-    # Accumulate the validation loss.
-    total_eval_loss += loss.item()
-    # Move logits and labels to CPU
-    logits = logits.detach().cpu().numpy()
-    label_ids = b_labels.to('cpu').numpy()
-    preds= np.argmax(logits, axis=1).flatten()
-    labels_flat = label_ids.flatten()
-    all_preds.append(preds)
-
+    # Tell pytorch not to bother with constructing the compute graph during
+    # the forward pass, since this is only needed for backprop (training).
+    with torch.no_grad():        
+      evl_mdl = finetuned_model(b_input_ids, 
+                      token_type_ids=None, 
+                      attention_mask=b_input_mask,
+                      labels=b_labels)
+      loss=evl_mdl[0]
+      logits=evl_mdl[1]
+      # Accumulate the validation loss.
+      total_eval_loss += loss.item()
+      # Move logits and labels to CPU
+      logits = logits.detach().cpu().numpy()
+      label_ids = b_labels.to('cpu').numpy()
+      preds= np.argmax(logits, axis=1).flatten()
+      labels_flat = label_ids.flatten()
+      all_preds.append(preds)
   flat_all_true_labels = [item.item() for sublist in all_true_labels for item in sublist]
   flat_all_preds = [item for sublist in all_preds for item in sublist]
-
+  #print(flat_all_true_labels)
+  #print(flat_all_preds)
   print(classification_report(flat_all_true_labels, flat_all_preds))
-  
   fold_precision = precision_score(flat_all_true_labels, flat_all_preds)
   fold_recall = recall_score(flat_all_true_labels, flat_all_preds)
   fold_f1 = f1_score(flat_all_true_labels, flat_all_preds)
-
   print('Results for this fold:: Prec: ',fold_precision, 'Rec: ',fold_recall, 'F1: ',fold_f1)
-
   results_dict[fold_counter]['p'].append(fold_precision)
   results_dict[fold_counter]['r'].append(fold_recall)
   results_dict[fold_counter]['f1'].append(fold_f1)
@@ -283,100 +280,108 @@ if __name__ == '__main__':
     # Combine the training inputs into a TensorDataset.
     dataset = TensorDataset(pcl_input_ids, pcl_att_masks, pcl_labels)
 
+    ALL_RESULTS_DICTS = []
     # Configuration options
     k_folds = 5
-    epochs = 2
+    epochs = 10
+    seed=[1, 34, 42, 78, 95]
+    for s in seed:
 
-    # Set fixed random number seed
-    seed_val = 42
+      # Set fixed random number seed
+      seed_val = s
 
-    random.seed(seed_val)
-    np.random.seed(seed_val)
-    torch.manual_seed(seed_val)
-    torch.cuda.manual_seed_all(seed_val)
+      random.seed(seed_val)
+      np.random.seed(seed_val)
+      torch.manual_seed(seed_val)
+      torch.cuda.manual_seed_all(seed_val)
 
-    # We'll store a number of quantities such as training and validation loss, 
-    # validation accuracy, and timings.
-    training_stats = []
+      # We'll store a number of quantities such as training and validation loss, 
+      # validation accuracy, and timings.
+      training_stats = []
 
-    # Measure the total training time for the whole run.
-    total_t0 = time.time()
-
-
-    # Define the K-fold Cross Validator
-    SKFold=StratifiedKFold(n_splits=k_folds, shuffle=True, random_state=1)  
-      
-    # Start print
-    print('--------------------------------')
+      # Measure the total training time for the whole run.
+      total_t0 = time.time()
 
 
-    
-
-    # K-fold Cross Validation model evaluation
-    fold_counter = 1
-    results_dict = defaultdict(lambda : defaultdict(list))
-    
-    for fold, (train_ids, test_ids) in enumerate(SKFold.split(pcl_pars, pcl_labels)):
-      
-      # Print
-      print(f'FOLD {fold}')
+      # Define the K-fold Cross Validator
+      SKFold=StratifiedKFold(n_splits=k_folds, shuffle=True, random_state=1)  
+        
+      # Start print
       print('--------------------------------')
-      
-      # Sample elements randomly from a given list of ids, no replacement.
-      train_subsampler = torch.utils.data.SubsetRandomSampler(train_ids)
-      test_subsampler = torch.utils.data.SubsetRandomSampler(test_ids)
-      
-      # Define data loaders for training and testing data in this fold
-      train_downsampled_data=subsample_train(dataset, train_subsampler)
 
-      downsampled_train_dataloader = torch.utils.data.DataLoader(
-                        train_downsampled_data, 
-                        batch_size=8)
-      
-      validation_dataloader = torch.utils.data.DataLoader(
-                        dataset,
-                        batch_size=8, sampler=test_subsampler)
-      
-      print(f'For this fold, training is {len(train_downsampled_data)}')
-      print(f'For this fold, test is {len(test_subsampler)}')
+
       
 
-      model=RobertaForSequenceClassification.from_pretrained(model_path, 
-                                                               num_labels=2, 
-                                                               output_attentions=False, 
-                                                               output_hidden_states=False
-                                                               )
-      # Tell pytorch to run this model on the GPU.
-      model.cuda()
-
-      optimizer = AdamW(model.parameters(),
-                        lr = 2e-5, # args.learning_rate - default is 5e-5.
-                        eps = 1e-8 # args.adam_epsilon  - default is 1e-8.
-                        )
+      # K-fold Cross Validation model evaluation
+      fold_counter = 1
+      results_dict = defaultdict(lambda : defaultdict(list))
       
+      for fold, (train_ids, test_ids) in enumerate(SKFold.split(pcl_pars, pcl_labels)):
+        
+        # Print
+        print(f'FOLD {fold}')
+        print('--------------------------------')
+        
+        # Sample elements randomly from a given list of ids, no replacement.
+        train_subsampler = torch.utils.data.SubsetRandomSampler(train_ids)
+        test_subsampler = torch.utils.data.SubsetRandomSampler(test_ids)
+        
+        # Define data loaders for training and testing data in this fold
+        train_downsampled_data=subsample_train(dataset, train_subsampler)
+
+        downsampled_train_dataloader = torch.utils.data.DataLoader(
+                          train_downsampled_data, 
+                          batch_size=8)
+        
+        validation_dataloader = torch.utils.data.DataLoader(
+                          dataset,
+                          batch_size=8, sampler=test_subsampler)
+        
+        print(f'For this fold, training is {len(train_downsampled_data)}')
+        print(f'For this fold, test is {len(test_subsampler)}')
+        
+
+        model=RobertaForSequenceClassification.from_pretrained(model_path, 
+                                                                 num_labels=2, 
+                                                                 output_attentions=False, 
+                                                                 output_hidden_states=False
+                                                                 )
+        # Tell pytorch to run this model on the GPU.
+        model.cuda()
+
+        optimizer = AdamW(model.parameters(),
+                          lr = 2e-5, # args.learning_rate - default is 5e-5.
+                          eps = 1e-8 # args.adam_epsilon  - default is 1e-8.
+                          )
+        
 
 
-      # Total number of training steps is [number of batches] x [number of epochs]. 
-      # (Note that this is not the same as the number of training samples).
-      total_steps = len(downsampled_train_dataloader) * epochs
+        # Total number of training steps is [number of batches] x [number of epochs]. 
+        # (Note that this is not the same as the number of training samples).
+        total_steps = len(downsampled_train_dataloader) * epochs
 
-      scheduler = get_linear_schedule_with_warmup(optimizer, 
-                                                num_warmup_steps = 0, # Default value in run_glue.py
-                                                num_training_steps = total_steps)
+        scheduler = get_linear_schedule_with_warmup(optimizer, 
+                                                  num_warmup_steps = 0, # Default value in run_glue.py
+                                                  num_training_steps = total_steps)
 
-      # ========================================
-      #               Training
-      # ========================================
-      # Perform one full pass over the training set.
-      ft_model=finetune_model(model, downsampled_train_dataloader)
+        # ========================================
+        #               Training
+        # ========================================
+        # Perform one full pass over the training set.
+        ft_model=finetune_model(model, downsampled_train_dataloader)
 
-      # ========================================
-      #               Validation
-      # ========================================
-      # After the completion of each training epoch, measure our performance on
-      # our validation set.
-      validate_predictions(ft_model, validation_dataloader, fold_counter)
-      fold_counter += 1
+        # ========================================
+        #               Validation
+        # ========================================
+        # After the completion of each training epoch, measure our performance on
+        # our validation set.
+        validate_predictions(ft_model, validation_dataloader, fold_counter)
+        fold_counter += 1
 
-    print('=== PRINTING ALL RESULTS ===')
-    print(results_dict)
+      print('For seed: ',seed_val)
+      for fold in results_dict:
+        for metric in results_dict[fold]:
+          for res in results_dict[fold][metric]:
+            print(fold,metric,'=',res)
+        print('----------')
+      ALL_RESULTS_DICTS.append(results_dict)
