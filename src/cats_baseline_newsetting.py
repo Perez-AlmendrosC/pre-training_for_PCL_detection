@@ -7,8 +7,8 @@ import datetime
 import os
 import numpy as np
 from numpy import random
-
-from transformers import RobertaTokenizer, RobertaForSequenceClassification, AdamW, AutoTokenizer, AutoModelWithHeads
+from argparse import ArgumentParser
+from transformers import RobertaTokenizer, RobertaForSequenceClassification, AdamW, AutoTokenizer
 from transformers import get_linear_schedule_with_warmup
 
 from sklearn.preprocessing import MultiLabelBinarizer
@@ -85,7 +85,7 @@ def flat_accuracy(preds, labels):
     return np.sum(pred_flat == labels_flat) / len(labels_flat)
 
 
-def subsample_train (dataset, train_subsampler, args.times_negs):
+def subsample_train (dataset, train_subsampler, times_negs):
   train_dataloader = torch.utils.data.DataLoader(dataset, batch_size=1, sampler=train_subsampler) 
   downsample_idx=[]
   downsample_masks=[]
@@ -109,8 +109,8 @@ def subsample_train (dataset, train_subsampler, args.times_negs):
       downsample_idx.append(tks)
       downsample_masks.append(masks)
       downsample_labels.append(lab)
-    if len(downsample_idx)==positives+(positives*args.times_negs):
-      print(f'the downsampled dataset has now {positives} positive examples and {positives*n_negs} negative examples of PCL')
+    if len(downsample_idx)==positives+(positives*times_negs):
+      print(f'the downsampled dataset has now {positives} positive examples and {positives*times_negs} negative examples of PCL')
       break
   #count positives and negatives    
   c0=0
@@ -197,8 +197,8 @@ def finetune_model(model, train_dataloader):
   
   return model
 
-def validate_predictions(finetuned_model, validation_dataloader, fold_counter):
-  output_file_name=f'{cat}_{args.times_negs}.txt'
+def validate_predictions(finetuned_model, validation_dataloader, fold_counter, times_negs):
+  output_file_name=f'{cat}_{times_negs}.txt'
   with open(output_file_name, 'a') as output:
     t0 = time.time()
     finetuned_model.eval()
@@ -273,10 +273,13 @@ def validate_predictions(finetuned_model, validation_dataloader, fold_counter):
 
 if __name__ == '__main__':
 
-  parser = argparse.ArgumentParser()
+  parser = ArgumentParser()
 
   parser.add_argument("--dataset-path", required=True, help="Path to dataset")
   parser.add_argument("--times-negs", required=True, type=int, help="Number of epochs to train the adapter")
+  parser.add_argument("--tokenizer-path", required=True, help="Tokenizer path")
+  parser.add_argument("--model-path", required=True, help="Model path")
+
 
 
   args = parser.parse_args()
@@ -304,7 +307,7 @@ if __name__ == '__main__':
 
   # Load the roBERTa tokenizer.
   print('Loading roBERTa tokenizer...')
-  tokenizer = RobertaTokenizer.from_pretrained('/scratch/c.c1867383/roberta-tokenizer', do_lower_case=True)
+  tokenizer = RobertaTokenizer.from_pretrained(args.tokenizer_path, do_lower_case=True)
 
   # tokenize and preprocess with BERT
   cats_input_ids, cats_att_masks, cats_labels=preprocessing_text(pars, labels)
@@ -353,15 +356,18 @@ if __name__ == '__main__':
                         train_downsampled_data, #dataset
                         batch_size=8, 
                         #sampler=train_subsampler)
+                        )
       
       validation_dataloader = torch.utils.data.DataLoader(
                         dataset,
                         batch_size=8, sampler=test_subsampler)
       
-      print(f'For this fold, training is {len(train_subsampler)}')
-      print(f'For this fold, test is {len(test_subsampler)}')
+      len_train_subs = len(train_subsampler)
+      len_test_subs = len(test_subsampler)
+      print(f'For this fold, training is {len_train_subs}')
+      print(f'For this fold, test is {len_test_subs}')
 
-      model=RobertaForSequenceClassification.from_pretrained('/scratch/c.c1867383/roberta-automodel-with-heads', 
+      model=RobertaForSequenceClassification.from_pretrained(args.model_path, 
                                                 num_labels=2, 
                                                 output_attentions=False, 
                                                 output_hidden_states=False
@@ -399,7 +405,7 @@ if __name__ == '__main__':
       # ========================================
       # After the completion of training, measure our performance on
       # our validation set.
-      validate_predictions(ft_model, validation_dataloader, fold_counter)
+      validate_predictions(ft_model, validation_dataloader, fold_counter, times_negs)
       fold_counter += 1
 
       print('For seed: ',seed_val)
