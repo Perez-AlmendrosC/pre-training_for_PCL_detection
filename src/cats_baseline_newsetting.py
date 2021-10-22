@@ -412,8 +412,7 @@ if __name__ == '__main__':
       print('For seed: ',seed_val)
       for fold in results_dict:
         for metric in results_dict[fold]:
-          for res in results_dict[fold][metric]:
-            print(fold,metric,'=',res)
+          print(fold,metric,'=',results_dict[fold][metric])
         print('----------')
     results_per_run.append(results_dict)
 
