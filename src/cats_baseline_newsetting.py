@@ -110,7 +110,7 @@ def subsample_train (dataset, train_subsampler, times_negs):
       downsample_masks.append(masks)
       downsample_labels.append(lab)
     if len(downsample_idx)==positives+(positives*times_negs):
-      print(f'the downsampled dataset has now {positives} positive examples and {positives*times_negs} negative examples of PCL')
+      print(f'the downsampled training set has now {positives} positive examples and {positives*times_negs} negative examples of PCL')
       break
   #count positives and negatives    
   c0=0
@@ -193,7 +193,7 @@ def finetune_model(model, train_dataloader):
 
     print("")
     print("  Average training loss: {0:.2f}".format(avg_train_loss))
-    print("  Training epcoh took: {:}".format(training_time))
+    print("  Training epoch took: {:}".format(training_time))
   
   return model
 
@@ -244,9 +244,9 @@ def validate_predictions(finetuned_model, validation_dataloader, fold_counter, t
     fold_recall = recall_score(flat_all_true_labels, flat_all_preds)
     fold_f1 = f1_score(flat_all_true_labels, flat_all_preds)
     print('Results for this fold:: Prec: ',fold_precision, 'Rec: ',fold_recall, 'F1: ',fold_f1)
-    results_dict[fold_counter]['p'].append(fold_precision)
-    results_dict[fold_counter]['r'].append(fold_recall)
-    results_dict[fold_counter]['f1'].append(fold_f1)
+    results_dict[fold_counter]['p'] = fold_precision
+    results_dict[fold_counter]['r'] = fold_recall
+    results_dict[fold_counter]['f1'] = fold_f1
         
   """
         # for multilabel
@@ -279,11 +279,10 @@ if __name__ == '__main__':
   parser.add_argument("--times-negs", required=True, type=int, help="Number of epochs to train the adapter")
   parser.add_argument("--tokenizer-path", required=True, help="Tokenizer path")
   parser.add_argument("--model-path", required=True, help="Model path")
-
+  parser.add_argument("--results-path", required=False, help="Directory where to save results")
 
 
   args = parser.parse_args()
-
 
 
   if torch.cuda.is_available():       
@@ -315,8 +314,10 @@ if __name__ == '__main__':
   dataset = TensorDataset(cats_input_ids, cats_att_masks, cats_labels)
 
   times_negs=args.times_negs
-  k_folds = 5
-  epochs = 10
+  k_folds = 3
+  epochs = 3
+
+  results_per_run = []
 
   seed=[1, 34, 49, 78, 95]
   for s in seed:
@@ -330,14 +331,14 @@ if __name__ == '__main__':
     training_stats = []
     total_t0 = time.time()
 
-    kf=KFold(n_splits=5, shuffle=True, random_state=1)  
+    kf=KFold(n_splits=k_folds, shuffle=True, random_state=1)  
       
     # Start print
     print('--------------------------------')
 
     # K-fold Cross Validation model evaluation
     fold_counter = 1
-    results_dict = defaultdict(lambda : defaultdict(list))
+    results_dict = defaultdict(lambda : defaultdict(int))
 
     for fold, (train_ids, test_ids) in enumerate(kf.split(dataset)):
       
@@ -414,3 +415,36 @@ if __name__ == '__main__':
           for res in results_dict[fold][metric]:
             print(fold,metric,'=',res)
         print('----------')
+    results_per_run.append(results_dict)
+
+  with open(os.path.join(args.results_path,'results__cat='+cat+'__times_negs='+str(times_negs)+'.csv'),'w') as outf:
+    finalp = []
+    finalr = []
+    finalf1 = []
+    for idx,rdict in enumerate(results_per_run):
+      avgp=[]
+      avgr=[]
+      avgf1=[]
+      for fold in rdict:
+        avgp.append(rdict[fold]['p'][0])
+        avgr.append(rdict[fold]['r'][0])
+        avgf1.append(rdict[fold]['f1'][0])
+      avgp = np.mean(avgp)
+      avgr = np.mean(avgr)
+      avgf1 = np.mean(avgf1)
+      finalp.append(avgp)
+      finalr.append(avgr)
+      finalf1.append(avgf1)
+      outf.write(f'For run {idx+1}\n')
+      outf.write(f'---------\n')
+      outf.write(f'Precision={avgp}\n')
+      outf.write(f'Recall={avgr}\n')
+      outf.write(f'F1={avgf1}\n')
+      outf.write(f'---------\n\n')
+    finalp = np.mean(finalp)
+    finalr = np.mean(finalr)
+    finalf1 = np.mean(finalf1)
+    outf.write(f'Results after avg of all runs for category {cat}\n')
+    outf.write(f'Precision={finalp}\n')
+    outf.write(f'Recall={finalr}\n')
+    outf.write(f'F1={finalf1}\n')
