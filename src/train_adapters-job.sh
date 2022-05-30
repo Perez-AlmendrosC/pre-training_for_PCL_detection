@@ -11,7 +11,6 @@
 ##SBATCH -p dev ##for dev partition
 
 #SBATCH --ntasks=7
-##SBATCH -t 00:10:00 ##for dev partition
 
 
 cd ~/adapters_env
@@ -19,7 +18,7 @@ module load anaconda/2020.02
 source activate
 conda activate adapters_env
 
-clush -w $SLURM_NODELIST "sudo /apps/slurm/gpuset_0_shared" #"sudo /apps/slurm/gpuset_0_shared"  #"sudo /apps/slurm/gpuset_3_exclusive" 
+clush -w $SLURM_NODELIST "sudo /apps/slurm/gpuset_0_shared" 
 echo 'Experiment running'
 
 echo 'Pretraining adapter'
