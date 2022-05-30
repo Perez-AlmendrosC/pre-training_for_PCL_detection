@@ -51,8 +51,6 @@ if __name__ == '__main__':
 
 	# Encode the input data
 	dataset = dataset.map(encode_batch, batched=True)
-	# The transformers model expects the target class column to be named "labels"
-	#dataset.rename_column_("label", "labels")
 	# Transform to pytorch tensors and only output the required columns
 	dataset.set_format(type="torch", columns=["input_ids", "attention_mask", "labels"])
 
@@ -63,51 +61,38 @@ if __name__ == '__main__':
 	test_size = len(dataset['train']) - train_size
 	train_dataset, test_dataset = torch.utils.data.random_split(dataset['train'], [train_size, test_size])
 
-	#config = RobertaConfig.from_pretrained(args.model_path, num_labels=3)
-
 	model = RobertaForSequenceClassification.from_pretrained(args.model_path) 
-	#model = RobertaModelWithHeads.from_pretrained("/scratch/c.c1867383/roberta-automodel-with-heads", config=config)
 
 	# Add a new adapter
 	model.add_adapter(dataset_name)
+	
 	"""
-	# Add a matching classification head
-	model.add_classification_head(dataset_name, num_labels=3)
+	# If desired, add a matching classification head
+	model.add_classification_head(dataset_name, num_labels=2)
 	"""
 	# Activate the adapter
 	model.train_adapter(dataset_name)
 
-	training_args = TrainingArguments(
-									learning_rate=1e-4,
-									num_train_epochs=args.num_epochs,
-									per_device_train_batch_size=8,
-									per_device_eval_batch_size=8,
-									logging_steps=3000,
-									output_dir=args.output_path,
-									save_total_limit = 3,
-									overwrite_output_dir=True,
-									# The next line is important to ensure the dataset labels are properly passed to the model
-									remove_unused_columns=False
-									)
+	training_args = TrainingArguments(learning_rate=1e-4,
+					  num_train_epochs=args.num_epochs,
+					  per_device_train_batch_size=8,
+					  per_device_eval_batch_size=8,
+					  logging_steps=3000,
+					  output_dir=args.output_path,
+					  save_total_limit = 3,
+					  overwrite_output_dir=True,
+					  remove_unused_columns=False
+					 )
 
 	trainer = AdapterTrainer(model=model,
-							args=training_args,
-							train_dataset=train_dataset,
-							eval_dataset=test_dataset,
-							compute_metrics=compute_accuracy
-							)
+				 args=training_args,
+				 train_dataset=train_dataset,
+				 eval_dataset=test_dataset,
+				 compute_metrics=compute_accuracy
+				)
 
 	print(f'Training for {args.num_epochs} epochs...')
 	trainer.train()
 
-	print(f'Evaluating...')
-	#trainer.evaluate()
-
-
-
 	model.save_adapter(args.output_path, dataset_name)
 	print('Adapter saved')
-
-	#model.save_pretrained(args.output_path)
-
-	#print('Model + adapter saved')
