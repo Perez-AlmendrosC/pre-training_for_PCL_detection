@@ -28,7 +28,7 @@ The flow of the experiments is as follows:
 - Train adapter on selected task (in data folder) --> pretrain_adapter.py
 
 2. Use either the model finetuned on the auxiliary task or add the pre-trained adapter to a pre-trained language model to fine-tune and test on PCL detection. Note that PCL data is only available under request (see https://github.com/Perez-AlmendrosC/dontpatronizeme). 
-- Use the file binary_dpm.py or multilabel_dpm.py to re-finetune and test the new models on PCL detection (binary) and categorization (multilabel), where you can either add the pre-trained adapter or inizialize the model from its pre-finetuned version on the selected auxiliary task.
+- Use the file binary_dpm.py or multilabel_dpm.py to re-finetune and test the new models on PCL detection (binary) and categorization (multilabel), where you can either add the pre-trained adapter or inizialize the model from its pre-finetuned version on the selected auxiliary task. Note that for multilabel classification in this specific setting, we do not include negative examples of PCL, so the number of negative examples (times_negs in the arguments) has to be set to 0.
 
 
 ### Citation
